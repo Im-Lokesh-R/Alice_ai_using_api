@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alice AI Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5e8ff 0%, #d1f5e8 100%);
+            transition: background 0.5s ease;
+            overflow-x: hidden;
+        }
+        .dark-mode {
+            background: linear-gradient(135deg, #2a1b3d 0%, #1e3c34 100%);
+            color: #e0e0e0;
+        }
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2vw;
+            max-width: 90vw;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .message {
+            margin: 1vw 0;
+            padding: 1vw 1.5vw;
+            border-radius: 2vw;
+            max-width: 70%;
+            animation: fadeIn 0.5s ease-in-out;
+            box-shadow: 0 0.4vw 1vw rgba(0, 0, 0, 0.1);
+            position: relative;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background: #ffdbdb;
+            color: #333;
+            margin-left: auto;
+            border-bottom-right-radius: 0.5vw;
+        }
+        .alice-message {
+            background: #e0f7e9;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 0.5vw;
+        }
+        .dark-mode .user-message {
+            background: #4a2c5e;
+            color: #fff;
+        }
+        .dark-mode .alice-message {
+            background: #2e5b4f;
+            color: #e0e0e0;
+        }
+        .alice-message a {
+            color: #007bff;
+            text-decoration: underline;
+        }
+        .dark-mode .alice-message a {
+            color: #66b3ff;
+        }
+        #input-container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 2vw;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 -0.4vw 1.5vw rgba(0, 0, 0, 0.1);
+            border-top-left-radius: 2vw;
+            border-top-right-radius: 2vw;
+            max-width: 90vw;
+            margin: 0 auto;
+            position: sticky;
+            bottom: 0;
+            transform: translateY(0);
+        }
+        .dark-mode #input-container {
+            background: rgba(40, 40, 40, 0.9);
+        }
+        #mode-select {
+            margin-right: 1vw;
+            padding: 1vw;
+            border: none;
+            border-radius: 1vw;
+            background: #f0e4ff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        #mode-select:hover {
+            background: #d9c8ff;
+        }
+        .dark-mode #mode-select {
+            background: #3a2b50;
+            color: #e0e0e0;
+        }
+        #message-input {
+            flex: 1;
+            padding: 1vw;
+            border: none;
+            border-radius: 1.5vw;
+            background: #fff;
+            box-shadow: inset 0 0.2vw 0.5vw rgba(0, 0, 0, 0.05);
+            font-size: 1rem;
+            transition: box-shadow 0.3s ease;
+            min-width: 20vw;
+        }
+        #message-input:focus {
+            outline: none;
+            box-shadow: inset 0 0.2vw 0.5vw rgba(0, 0, 0, 0.1), 0 0 0.8vw rgba(123, 104, 238, 0.5);
+        }
+        .dark-mode #message-input {
+            background: #3c3c3c;
+            color: #e0e0e0;
+        }
+        #send-btn, #voice-btn, #doc-btn, #ppt-btn, #new-chat-btn {
+            padding: 1vw 2vw;
+            border: none;
+            border-radius: 1.5vw;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s ease, background 0.3s ease;
+            margin: 0.5vw;
+            font-size: 1rem;
+        }
+        #send-btn {
+            background: #ffb6c1;
+            color: #fff;
+        }
+        #send-btn:hover {
+            background: #ff99ac;
+            transform: scale(1.05) translateY(-0.2vw);
+        }
+        #voice-btn {
+            background: #98fb98;
+            color: #333;
+        }
+        #voice-btn:hover {
+            background: #7ee57e;
+            transform: scale(1.05) translateY(-0.2vw);
+        }
+        #doc-btn {
+            background: #add8e6;
+            color: #333;
+        }
+        #doc-btn:hover {
+            background: #87ceeb;
+            transform: scale(1.05) translateY(-0.2vw);
+        }
+        #ppt-btn {
+            background: #ffd700;
+            color: #333;
+        }
+        #ppt-btn:hover {
+            background: #ffcc00;
+            transform: scale(1.05) translateY(-0.2vw);
+        }
+        #new-chat-btn {
+            background: #dda0dd;
+            color: #333;
+        }
+        #new-chat-btn:hover {
+            background: #c68ec6;
+            transform: scale(1.05) translateY(-0.2vw);
+        }
+        .dark-mode #send-btn {
+            background: #ff6f91;
+        }
+        .dark-mode #voice-btn {
+            background: #66cdAA;
+        }
+        .dark-mode #doc-btn {
+            background: #4682b4;
+        }
+        .dark-mode #ppt-btn {
+            background: #daa520;
+        }
+        .dark-mode #new-chat-btn {
+            background: #8a2be2;
+        }
+        #toggle-theme {
+            position: fixed;
+            top: 1vw;
+            right: 1vw;
+            padding: 0.8vw 1.5vw;
+            border: none;
+            border-radius: 1vw;
+            background: #f0e4ff;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+            z-index: 10;
+        }
+        #toggle-theme:hover {
+            background: #d9c8ff;
+        }
+        .dark-mode #toggle-theme {
+            background: #3a2b50;
+            color: #e0e0e0;
+        }
+        #history-container {
+            width: 90vw;
+            max-height: 15vh;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 1vw;
+            padding: 1vw;
+            box-shadow: 0 0.4vw 1vw rgba(0, 0, 0, 0.1);
+            margin: 1vw auto;
+            order: 2;
+        }
+        .dark-mode #history-container {
+            background: rgba(40, 40, 40, 0.9);
+            color: #e0e0e0;
+        }
+        .history-item {
+            padding: 0.8vw;
+            cursor: pointer;
+            border-bottom: 0.1vw solid #e0e0e0;
+            transition: background 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .history-item:hover {
+            background: #f0e4ff;
+        }
+        .dark-mode .history-item {
+            border-bottom: 0.1vw solid #555;
+        }
+        .dark-mode .history-item:hover {
+            background: #3a2b50;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(1vw); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (min-width: 769px) {
+            #history-container {
+                position: absolute;
+                top: 5vw;
+                right: 1vw;
+                width: 20vw;
+                max-height: 20vh;
+                margin: 0;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 2vw;
+            }
+            #chat-container {
+                padding: 4vw;
+                max-width: 100vw;
+                margin-top: 10vw;
+            }
+            .message {
+                max-width: 85%;
+                padding: 2vw 3vw;
+                font-size: 0.9rem;
+            }
+            #input-container {
+                flex-direction: column;
+                padding: 3vw;
+                max-width: 100vw;
+                border-radius: 0;
+            }
+            #mode-select, #message-input, #send-btn, #voice-btn, #doc-btn, #ppt-btn, #new-chat-btn {
+                width: 100%;
+                margin: 1.5vw 0;
+                padding: 3vw;
+                font-size: 1rem;
+            }
+            #message-input {
+                min-width: 0;
+            }
+            #toggle-theme {
+                top: 1vw;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 30vw;
+                padding: 2vw 3vw;
+            }
+            #history-container {
+                max-height: 20vh;
+                font-size: 0.85rem;
+            }
+            .history-item {
+                padding: 2vw;
+            }
+        }
+        @media (max-width: 400px) {
+            .message {
+                font-size: 0.8rem;
+            }
+            #mode-select, #message-input, #send-btn, #voice-btn, #doc-btn, #ppt-btn, #new-chat-btn {
+                font-size: 0.9rem;
+                padding: 4vw;
+            }
+            #toggle-theme {
+                width: 40vw;
+                font-size: 0.9rem;
+            }
+            #history-container {
+                max-height: 25vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="toggle-theme">Toggle Theme</button>
+    <div id="chat-container"></div>
+    <div id="history-container">
+        {% for chat_id, title in chat_titles.items() %}
+            <div class="history-item" data-chat-id="{{ chat_id }}">{{ title }}</div>
+        {% endfor %}
+    </div>
+    <div id="input-container">
+        <select id="mode-select">
+            {% for mode in modes %}
+                <option value="{{ mode }}" {% if mode == current_mode %}selected{% endif %}>{{ character_modes[mode]['name'] }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-btn">Send</button>
+        <button id="voice-btn">🎤 Voice</button>
+        <button id="doc-btn">Create Doc</button>
+        <button id="ppt-btn">Create PPT</button>
+        <button id="new-chat-btn">New Chat</button>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const voiceBtn = document.getElementById('voice-btn');
+        const docBtn = document.getElementById('doc-btn');
+        const pptBtn = document.getElementById('ppt-btn');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const modeSelect = document.getElementById('mode-select');
+        const toggleThemeBtn = document.getElementById('toggle-theme');
+        const historyContainer = document.getElementById('history-container');
+
+        function addMessage(text, isUser = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', isUser ? 'user-message' : 'alice-message');
+            if (text.includes('[download it]')) {
+                const [message, linkPart] = text.split('[download it]');
+                const url = linkPart.match(/\((.*?)\)/)[1];
+                msgDiv.innerHTML = `${message}<a href="${url}" download>download it</a>`;
+            } else {
+                msgDiv.textContent = text;
+            }
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendMessage() {
+            const question = messageInput.value.trim();
+            if (!question) return;
+            addMessage(question, true);
+            messageInput.value = '';
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, mode: modeSelect.value })
+            })
+            .then(response => response.json())
+            .then(data => addMessage(data.response))
+            .then(updateHistory)
+            .catch(error => addMessage('Oops, something went wrong!'));
+        }
+
+        function voiceChat() {
+            addMessage("Listening...");
+            fetch('/voice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: modeSelect.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    addMessage(data.error);
+                } else {
+                    chatContainer.lastChild.remove();
+                    addMessage(data.question, true);
+                    addMessage(data.response);
+                    updateHistory();
+                }
+            })
+            .catch(error => addMessage('Voice input failed!'));
+        }
+
+        function createFile(fileType) {
+            const topic = prompt(`What should the ${fileType === 'doc' ? 'document' : 'presentation'} be about?`);
+            if (!topic) return addMessage("No topic provided—canceled!");
+            const num = prompt(`How many ${fileType === 'doc' ? 'pages' : 'slides'} do you want? (e.g., 1-5)`, "1");
+            if (!num || isNaN(num) || num < 1) return addMessage("Invalid number—canceled!");
+            addMessage(`Creating a ${fileType === 'doc' ? 'document' : 'presentation'} about ${topic} with ${num} ${fileType === 'doc' ? 'pages' : 'slides'}...`, true);
+            fetch('/create_file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file_type: fileType, topic: topic, num_pages_or_slides: num, mode: modeSelect.value })
+            })
+            .then(response => response.json())
+            .then(data => data.forEach(item => addMessage(item.response)))
+            .then(updateHistory)
+            .catch(error => addMessage('Oops, something went wrong!'));
+        }
+
+        function newChat() {
+            fetch('/new_chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatContainer.innerHTML = '';
+                addMessage(data.response);
+                updateHistory();
+            })
+            .catch(error => addMessage('Failed to start new chat!'));
+        }
+
+        function switchChat(chatId) {
+            fetch('/switch_chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatContainer.innerHTML = '';
+                addMessage(data.response);
+                data.history.split('\n\n').filter(line => line).forEach(line => {
+                    const [user, alice] = line.split('\n');
+                    if (user) addMessage(user.substring(4), true);
+                    if (alice) addMessage(alice.substring(7));
+                });
+            })
+            .catch(error => addMessage('Failed to switch chat!'));
+        }
+
+        function updateHistory() {
+            fetch('/get_chat_titles')
+            .then(response => response.json())
+            .then(chatTitles => {
+                historyContainer.innerHTML = '';
+                for (const [chatId, title] of Object.entries(chatTitles)) {
+                    const item = document.createElement('div');
+                    item.classList.add('history-item');
+                    item.dataset.chatId = chatId;
+                    item.textContent = title;
+                    item.addEventListener('click', () => switchChat(chatId));
+                    historyContainer.appendChild(item);
+                }
+            });
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', e => e.key === 'Enter' && sendMessage());
+        voiceBtn.addEventListener('click', voiceChat);
+        docBtn.addEventListener('click', () => createFile('doc'));
+        pptBtn.addEventListener('click', () => createFile('ppt'));
+        newChatBtn.addEventListener('click', newChat);
+        modeSelect.addEventListener('change', () => {
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: '', mode: modeSelect.value })
+            })
+            .then(response => response.json())
+            .then(data => addMessage(data.response));
+        });
+        toggleThemeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            toggleThemeBtn.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+        });
+
+        updateHistory();
+        addMessage("{{ character_modes[current_mode]['intro'] | safe }}");
+    </script>
+</body>
+</html>
